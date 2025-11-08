@@ -57,43 +57,6 @@ def check_project_structure():
     return True
 
 
-def check_dependencies():
-    """Check if required dependencies are installed"""
-    requirements_file = os.path.join('backend', 'requirements.txt')
-    
-    if not os.path.exists(requirements_file):
-        print(f"Error: {requirements_file} not found!")
-        return False
-    
-    python_cmd = get_python_command()
-    
-    # Check if Flask is installed
-    try:
-        result = subprocess.run(
-            [python_cmd, '-c', 'import flask'],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode != 0:
-            print("Flask is not installed. Installing dependencies...")
-            print(f"Running: pip install -r {requirements_file}")
-            
-            install_result = subprocess.run(
-                [python_cmd, '-m', 'pip', 'install', '-r', requirements_file],
-                cwd='backend'
-            )
-            
-            if install_result.returncode != 0:
-                print("Failed to install dependencies!")
-                return False
-            
-            print("✓ Dependencies installed successfully!")
-    except Exception as e:
-        print(f"Error checking dependencies: {e}")
-        return False
-    
-    return True
-
 
 def start_backend():
     """Start the Flask backend server"""
@@ -251,13 +214,6 @@ def main():
         sys.exit(1)
     print("✓ Project structure valid")
     
-    # Check dependencies
-    print("\nChecking dependencies...")
-    if not check_dependencies():
-        print("\n✗ Failed to verify dependencies!")
-        sys.exit(1)
-    print("✓ Dependencies OK")
-    
     # Register signal handlers for cleanup
     signal.signal(signal.SIGINT, cleanup)
     signal.signal(signal.SIGTERM, cleanup)
@@ -296,13 +252,8 @@ def main():
     print("   2. Press Ctrl+C here to stop all servers")
     print("="*60 + "\n")
     
-    # Try to open browser automatically
-    try:
-        response = input("Open browser automatically? (y/n): ")
-        if response.lower() == 'y':
-            open_browser()
-    except KeyboardInterrupt:
-        cleanup()
+    # Open browser automatically (no prompt)
+    open_browser()
     
     print("\n⏳ Servers running... Press Ctrl+C to stop\n")
     
