@@ -1,3 +1,5 @@
+Access on Render: https://ubair-s-totp-gen-1.onrender.com (might take some time because of the free plan)
+
 # TOTP Generator - RFC 6238 Implementation
 
 A full-stack TOTP (Time-based One-Time Password) generator with customizable parameters based on RFC 6238 specification, consolidated into a single Flask web service.
