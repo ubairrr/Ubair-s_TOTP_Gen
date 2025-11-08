@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP Generator | RFC 6238</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-gradient"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <h1>TOTP Generator</h1>
+            </div>
+            <p class="subtitle">RFC 6238 Compliant • Time-Based One-Time Password</p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column: Configuration -->
+            <div class="left-column">
+                <!-- Secret Key Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Secret Key</h2>
+                        <span class="badge">Required</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                id="secret" 
+                                class="input-field"
+                                placeholder="Enter Base32 secret key..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <button id="generateSecretBtn" class="btn btn-outline">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+                            </svg>
+                            Generate Random Secret
+                        </button>
+                        <p class="hint">Base32 encoded string (e.g., JBSWY3DPEHPK3PXP)</p>
+                    </div>
+                </div>
+
+                <!-- Configuration Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Configuration</h2>
+                        <span class="badge badge-secondary">Optional</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="algorithm">Hash Algorithm</label>
+                                <select id="algorithm" class="select-field">
+                                    <option value="sha1">SHA-1</option>
+                                    <option value="sha256">SHA-256</option>
+                                    <option value="sha512">SHA-512</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="digits">Code Length</label>
+                                <select id="digits" class="select-field">
+                                    <option value="6">6 digits</option>
+                                    <option value="7">7 digits</option>
+                                    <option value="8">8 digits</option>
+                                    <option value="9">9 digits</option>
+                                    <option value="10">10 digits</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="timeStep">Time Step (seconds)</label>
+                                <input 
+                                    type="number" 
+                                    id="timeStep" 
+                                    class="input-field"
+                                    value="30" 
+                                    min="1" 
+                                    max="300"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="t0">T0 (Unix Epoch)</label>
+                                <input 
+                                    type="number" 
+                                    id="t0" 
+                                    class="input-field"
+                                    value="0"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button id="generateBtn" class="btn btn-primary btn-large">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Generate TOTP Code
+                </button>
+            </div>
+
+            <!-- Right Column: Results & Verification -->
+            <div class="right-column">
+                <!-- Result Card -->
+                <div id="resultSection" class="card card-result" style="display: none;">
+                    <div class="card-header">
+                        <h2>Generated Code</h2>
+                        <div class="auto-refresh-toggle">
+                            <input type="checkbox" id="autoRefresh" checked>
+                            <label for="autoRefresh">Auto-refresh</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="otp-display">
+                            <div class="otp-code" id="otpCode">------</div>
+                            <div class="timer-section">
+                                <div class="timer-info">
+                                    <span class="timer-label">Valid for</span>
+                                    <span class="timer-value" id="timeRemaining">--</span>
+                                    <span class="timer-unit">seconds</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="timerBar"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="copyBtn" class="btn btn-outline btn-block">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy Code
+                        </button>
+
+                        <div class="metadata-grid">
+                            <div class="metadata-item">
+                                <span class="metadata-label">Counter</span>
+                                <span class="metadata-value" id="counter">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Algorithm</span>
+                                <span class="metadata-value" id="usedAlgorithm">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Timestamp</span>
+                                <span class="metadata-value" id="timestamp">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Verify Code</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="verifyOtp">Enter OTP to Verify</label>
+                            <input 
+                                type="text" 
+                                id="verifyOtp" 
+                                class="input-field"
+                                placeholder="Enter code..."
+                                maxlength="10"
+                            >
+                        </div>
+                        <button id="verifyBtn" class="btn btn-outline btn-block">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Verify Code
+                        </button>
+                        <div id="verifyResult" class="verify-result" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h2>About</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="info-text">This TOTP generator follows RFC 6238 specifications and supports multiple hash algorithms, customizable time steps, and code lengths from 6 to 10 digits.</p>
+                        <a href="https://tools.ietf.org/html/rfc6238" target="_blank" class="info-link">
+                            Read RFC 6238 Documentation →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="errorToast" class="toast toast-error" style="display: none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span id="errorMessage"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
