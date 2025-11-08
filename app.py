@@ -1,10 +1,29 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from totp import TOTP
 import time
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend requests
+app = Flask(__name__,
+            static_folder='static',
+            template_folder='templates')
+CORS(app)  # Enable CORS for all routes
+
+# ===== Frontend Routes =====
+
+@app.route('/')
+def serve_index():
+    """Serve the main HTML page"""
+    return render_template('index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve static files like style.css and script.js"""
+    if path == 'style.css' or path == 'script.js':
+         return send_from_directory(app.static_folder, path)
+    # Redirect any other path back to the index (for single-page app behavior)
+    return render_template('index.html')
+
+# ===== API Routes =====
 
 @app.route('/api/generate', methods=['POST'])
 def generate_totp():

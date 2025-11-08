@@ -1,6 +1,6 @@
 # TOTP Generator - RFC 6238 Implementation
 
-A full-stack TOTP (Time-based One-Time Password) generator with customizable parameters based on RFC 6238 specification.
+A full-stack TOTP (Time-based One-Time Password) generator with customizable parameters based on RFC 6238 specification, consolidated into a single Flask web service.
 
 ## Features
 
@@ -19,71 +19,71 @@ A full-stack TOTP (Time-based One-Time Password) generator with customizable par
 ## Project Structure
 
 ```
+
 totp-generator/
 ├── backend/
-│   ├── app.py              # Flask REST API
-│   ├── totp.py             # TOTP implementation
-│   └── requirements.txt    # Python dependencies
-├── frontend/
-│   ├── index.html          # Main HTML file
-│   ├── style.css           # Styles
-│   └── script.js           # Frontend logic
-└── README.md               # Documentation
-```
+│   ├── app.py              \# Flask REST API & Frontend Server
+│   ├── totp.py             \# TOTP implementation
+│   ├── static/             \# CSS and JS files
+│   │   ├── style.css
+│   │   └── script.js
+│   └── templates/          \# HTML file
+│       └── index.html
+├── requirements.txt        \# Python dependencies (for local & deployment)
+└── README.md               \# Documentation
 
-## Installation
+````
 
-### Backend Setup
+## Local Setup
 
-1. Navigate to the backend directory:
+This project now runs as a single web service.
+
+1.  Navigate to the project root:
 ```bash
-cd backend
-```
+cd totp-generator
+````
 
-2. Create a virtual environment (optional but recommended):
+2.  Create a virtual environment (optional but recommended):
+
+<!-- end list -->
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3.  Install dependencies:
+
+<!-- end list -->
+
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Run the Flask server:
+4.  Run the Flask server:
+
+<!-- end list -->
+
 ```bash
-python app.py
+python backend/app.py
 ```
 
-The backend will start on `http://localhost:5000`
+5.  Access the application at `http://localhost:5000`
 
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-```bash
-cd frontend
-```
-
-2. Open `index.html` in a web browser, or serve it using a simple HTTP server:
-```bash
-# Using Python
-python -m http.server 8000
-
-# Or using Node.js
-npx http-server -p 8000
-```
-
-3. Access the application at `http://localhost:8000`
+-----
 
 ## API Documentation
 
+The API is served from the same host as the application.
+
 ### Endpoints
 
-#### 1. Generate TOTP
+#### 1\. Generate TOTP
+
 **POST** `/api/generate`
 
 Request body:
+
 ```json
 {
   "secret": "JBSWY3DPEHPK3PXP",
@@ -95,6 +95,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -111,10 +112,12 @@ Response:
 }
 ```
 
-#### 2. Verify TOTP
+#### 2\. Verify TOTP
+
 **POST** `/api/verify`
 
 Request body:
+
 ```json
 {
   "secret": "JBSWY3DPEHPK3PXP",
@@ -128,6 +131,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -135,10 +139,12 @@ Response:
 }
 ```
 
-#### 3. Generate Secret
+#### 3\. Generate Secret
+
 **GET** `/api/generate-secret?length=32`
 
 Response:
+
 ```json
 {
   "success": true,
@@ -146,10 +152,12 @@ Response:
 }
 ```
 
-#### 4. Health Check
+#### 4\. Health Check
+
 **GET** `/api/health`
 
 Response:
+
 ```json
 {
   "status": "healthy",
@@ -162,7 +170,7 @@ Response:
 ### Python TOTP Class
 
 ```python
-from totp import TOTP
+from backend.totp import TOTP
 
 # Create TOTP instance
 totp = TOTP(
@@ -190,61 +198,50 @@ print(f"New secret: {secret}")
 ## Configuration Options
 
 ### Time Step
-- Default: 30 seconds
-- Valid range: 1-300 seconds
-- Common values: 30s (Google), 60s (Microsoft)
+
+  - Default: 30 seconds
+  - Valid range: 1-300 seconds
+  - Common values: 30s (Google), 60s (Microsoft)
 
 ### T0 (Unix Epoch)
-- Default: 0 (January 1, 1970)
-- Can be adjusted for custom time synchronization
+
+  - Default: 0 (January 1, 1970)
+  - Can be adjusted for custom time synchronization
 
 ### Digits
-- Options: 6, 7, 8, 9, or 10 digits
-- Default: 6 digits
-- Most services use 6 digits
+
+  - Options: 6, 7, 8, 9, or 10 digits
+  - Default: 6 digits
+  - Most services use 6 digits
 
 ### Hash Algorithm
-- **SHA-1**: Default, most compatible
-- **SHA-256**: More secure, better for new implementations
-- **SHA-512**: Highest security, less common
+
+  - **SHA-1**: Default, most compatible
+  - **SHA-256**: More secure, better for new implementations
+  - **SHA-512**: Highest security, less common
 
 ## Security Considerations
 
-1. **Secret Key Storage**: Never store secrets in plain text
-2. **HTTPS**: Always use HTTPS in production
-3. **Rate Limiting**: Implement rate limiting on verification endpoints
-4. **Time Sync**: Ensure server time is synchronized with NTP
-5. **Window Size**: Keep verification window small (1-2 steps)
-
-## Testing
-
-Test with known test vectors from RFC 6238:
-
-```python
-# SHA-1 test vector
-secret = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
-# At timestamp 1111111109, should generate: 050471
-# At timestamp 1234567890, should generate: 005924
-```
+1.  **Secret Key Storage**: Never store secrets in plain text
+2.  **HTTPS**: Always use HTTPS in production
+3.  **Rate Limiting**: Implement rate limiting on verification endpoints
+4.  **Time Sync**: Ensure server time is synchronized with NTP
+5.  **Window Size**: Keep verification window small (1-2 steps)
 
 ## Troubleshooting
 
-### Backend Issues
-- **Port already in use**: Change port in `app.py`
-- **Import errors**: Ensure all dependencies are installed
-- **CORS errors**: Check CORS configuration in `app.py`
-
-### Frontend Issues
-- **API connection failed**: Verify backend is running on port 5000
-- **Update API_BASE_URL** in `script.js` if using different host/port
+  - **Port already in use**: Change port in `app.py`
+  - **Import errors**: Ensure all dependencies are installed
+  - **CORS errors**: Check CORS configuration in `app.py`
 
 ## RFC 6238 Compliance
 
 This implementation follows RFC 6238 specification:
-- HOTP algorithm (RFC 4226) as base
-- Time-based counter calculation: T = (Current Unix time - T0) / X
-- Dynamic truncation
-- Support for multiple hash algorithms
+
+  - HOTP algorithm (RFC 4226) as base
+  - Time-based counter calculation: T = (Current Unix time - T0) / X
+  - Dynamic truncation
+  - Support for multiple hash algorithms
 
 ## License
 
@@ -252,9 +249,14 @@ MIT License - Feel free to use and modify for your projects.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome\! Please feel free to submit a Pull Request.
 
 ## References
 
-- [RFC 6238 - TOTP](https://tools.ietf.org/html/rfc6238)
-- [RFC 4226 - HOTP](https://tools.ietf.org/html/rfc4226)
+  - [RFC 6238 - TOTP](https://tools.ietf.org/html/rfc6238)
+  - [RFC 4226 - HOTP](https://tools.ietf.org/html/rfc4226)
+
+<!-- end list -->
+
+```
+```
